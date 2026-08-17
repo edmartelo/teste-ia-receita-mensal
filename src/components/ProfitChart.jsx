@@ -24,9 +24,8 @@ function ChartTooltip({ active, payload }) {
 export default function ProfitChart({ produtos }) {
   const top10 = produtos
     .filter((p) => p.completo)
-    .sort((a, b) => b.lucro - a.lucro)
+    .sort((a, b) => b.lucro - a.lucro) // maior lucro no topo do gráfico horizontal
     .slice(0, 10)
-    .reverse() // maior lucro no topo do gráfico horizontal
 
   return (
     <div className="rounded-xl border border-zinc-800 bg-panel/80 p-5">

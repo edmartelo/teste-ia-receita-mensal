@@ -8,10 +8,14 @@ export default function CatalogTable({ produtos }) {
   const filtrados = useMemo(() => {
     const termo = busca.trim().toLowerCase()
     const lista = termo
-      ? produtos.filter((p) => p.nome.toLowerCase().includes(termo))
+      ? produtos.filter((p) => String(p.nome ?? '').toLowerCase().includes(termo))
       : produtos.slice()
 
-    if (!direcao) return lista
+    if (!direcao) {
+      return lista.sort((a, b) =>
+        String(a.nome ?? '').localeCompare(String(b.nome ?? ''), 'pt-BR')
+      )
+    }
 
     return lista.sort((a, b) => {
       if (a.margem === null && b.margem === null) return 0
@@ -69,6 +73,14 @@ export default function CatalogTable({ produtos }) {
                 : prejuizo
                 ? 'text-neon-pink'
                 : 'text-neon-green'
+              // Margem tem cor própria: indefinida (÷0, ex. brinde a R$ 0) não
+              // é a mesma coisa que prejuízo, então não herda a cor do lucro.
+              const margemClasse =
+                semCusto || p.margem === null
+                  ? 'text-zinc-500'
+                  : p.margem < 0
+                  ? 'text-neon-pink'
+                  : 'text-neon-green'
 
               return (
                 <tr key={p.id} className="border-b border-zinc-800/60 last:border-0">
@@ -84,7 +96,7 @@ export default function CatalogTable({ produtos }) {
                   <td className="py-2 pr-4 text-right text-zinc-300">
                     {semCusto ? '—' : formatBRL(p.custo)}
                   </td>
-                  <td className={`py-2 pr-4 text-right font-medium ${valorClasse}`}>
+                  <td className={`py-2 pr-4 text-right font-medium ${margemClasse}`}>
                     {formatPercent(p.margem)}
                   </td>
                   <td className="py-2 pr-4 text-right text-zinc-300">{formatBRL(p.receita)}</td>

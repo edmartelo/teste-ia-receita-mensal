@@ -11,10 +11,18 @@ export function parseNumber(value) {
   return null
 }
 
+// Valores negativos não fazem sentido de negócio (preço, custo e demanda
+// nunca são < 0) e indicam erro de exportação do ERP — tratados como
+// ausentes, seguindo o mesmo padrão de "dado incompleto" usado para custo
+// nulo.
+function semNegativo(valor) {
+  return valor !== null && valor < 0 ? null : valor
+}
+
 export function computeProduct(raw) {
-  const preco = parseNumber(raw.preco)
-  const custo = parseNumber(raw.custo)
-  const demanda = parseNumber(raw.demanda)
+  const preco = semNegativo(parseNumber(raw.preco))
+  const custo = semNegativo(parseNumber(raw.custo))
+  const demanda = semNegativo(parseNumber(raw.demanda))
 
   const custoDisponivel = custo !== null
   const receita = preco !== null && demanda !== null ? preco * demanda : null

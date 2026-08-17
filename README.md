@@ -68,6 +68,51 @@ faixa padrão recomendada para paletas categóricas de dashboard — trade-off
 consciente para atender ao pedido explícito de "cores neon", mantendo os
 critérios de contraste e distinguibilidade sob daltonismo.
 
+## Revisão com agent (code-review)
+
+Depois da primeira versão pronta, rodei o skill `code-review` do Claude Code
+(fork de 10 agents de busca + verificação adversarial) sobre o diff completo
+do projeto. Ele apontou 13 achados; tratei-os assim:
+
+**Corrigidos:**
+- **Cor da margem indefinida** (`CatalogTable.jsx`): a coluna Margem herdava
+  a cor de prejuízo (rosa) do Lucro sempre que `p.lucro < 0`, então o "Brinde
+  Adesivos" (margem indefinida por preço R$ 0, ÷0) aparecia em rosa mesmo sem
+  ter uma margem negativa de fato — confundia "indefinido" com "prejuízo".
+  Agora a Margem tem cor própria: cinza quando indefinida/incompleta, rosa só
+  quando realmente negativa.
+- **Busca quebrava com nome ausente**: o filtro por nome chamava
+  `.toLowerCase()` direto em `p.nome`, sem a mesma proteção contra `null`
+  que já existia para preço/custo/demanda. Uma linha do ERP sem `nome`
+  derrubaria o painel inteiro ao digitar na busca. Corrigido com
+  `String(p.nome ?? '')`.
+- **Preço/custo/demanda negativos não eram tratados como dado inválido**:
+  um custo negativo, por exemplo, empurrava a margem para acima de 100% e
+  inflava o lucro artificialmente. Agora valores negativos são tratados como
+  ausentes, seguindo o mesmo padrão já usado para custo nulo (produto vai
+  para "dado incompleto" e sai dos totais). O texto do resumo também deixou
+  de dizer especificamente "sem custo cadastrado", já que agora a exclusão
+  pode vir de qualquer um dos três campos.
+
+**Documentados, não corrigidos** (fora do escopo dos 40 minutos — não
+ocorrem com o `data.json` atual, só com variações hipotéticas de export):
+`parseNumber` assume formatação BR mesmo em strings decimais simples (ex.:
+`"89.9"` seria mal interpretado); `data.json` não é validado como array antes
+do `map`; margem consolidada cai para "0,0%" (e não para negativo) no caso
+extremo de receita total ficar ≤ 0; `parseFloat` aceita lixo à direita da
+string; cor de lucro/prejuízo duplicada em 3 componentes em vez de uma fonte
+única; `ProfitChart` recalcula o top 10 sem `useMemo`; campo `totalProdutos`
+calculado e nunca consumido.
+
+## Ajustes de ordenação
+
+- **Gráfico**: os 10 produtos aparecem do maior lucro (topo) para o menor
+  (base) — o array já vem ordenado assim para o `BarChart` vertical do
+  Recharts, que renderiza a primeira posição do array no topo.
+- **Tabela do catálogo**: ordem alfabética por nome como estado inicial
+  (antes de qualquer clique no cabeçalho); ordenar por margem continua
+  disponível clicando em "Margem %".
+
 ## Tempo gasto
 
 Prazo do exercício: 40 minutos. 

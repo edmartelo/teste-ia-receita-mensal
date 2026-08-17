@@ -37,7 +37,7 @@ export default function SummaryCards({ resumo }) {
         tone={margemTone}
         hint={
           resumo.produtosIncompletos > 0
-            ? `${resumo.produtosIncompletos} produto(s) sem custo cadastrado, excluído(s) do cálculo`
+            ? `${resumo.produtosIncompletos} produto(s) com dado incompleto, excluído(s) do cálculo`
             : 'ponderada por receita'
         }
       />
