@@ -119,15 +119,6 @@ endereçados):
 
 Com isso, todos os 13 achados do `code-review` foram corrigidos.
 
-## Ajustes de ordenação
-
-- **Gráfico**: os 10 produtos aparecem do maior lucro (topo) para o menor
-  (base) — o array já vem ordenado assim para o `BarChart` vertical do
-  Recharts, que renderiza a primeira posição do array no topo.
-- **Tabela do catálogo**: ordem alfabética por nome como estado inicial
-  (antes de qualquer clique no cabeçalho); ordenar por margem continua
-  disponível clicando em "Margem %".
-
 ## Tempo gasto
 
 Prazo do exercício: 40 minutos. 
