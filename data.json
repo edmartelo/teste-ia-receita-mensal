@@ -1,0 +1,142 @@
+[
+  {
+    "id": "P01",
+    "nome": "Fone Bluetooth",
+    "preco": 129.9,
+    "custo": 68,
+    "demanda": 950
+  },
+  {
+    "id": "P02",
+    "nome": "Teclado Mecânico",
+    "preco": "1.299,90",
+    "custo": 720,
+    "demanda": 180
+  },
+  {
+    "id": "P03",
+    "nome": "Mouse Sem Fio",
+    "preco": 89.9,
+    "custo": 41,
+    "demanda": 1200
+  },
+  {
+    "id": "P04",
+    "nome": "Hub USB-C",
+    "preco": 149,
+    "custo": null,
+    "demanda": 430
+  },
+  {
+    "id": "P05",
+    "nome": "Webcam Full HD",
+    "preco": 199.9,
+    "custo": 118,
+    "demanda": 510
+  },
+  {
+    "id": "P06",
+    "nome": "Brinde Adesivos",
+    "preco": 0,
+    "custo": 2.5,
+    "demanda": 3000
+  },
+  {
+    "id": "P07",
+    "nome": "Cabo USB-C 2m",
+    "preco": 29.9,
+    "custo": 9,
+    "demanda": 4800
+  },
+  {
+    "id": "P08",
+    "nome": "Monitor 24\"",
+    "preco": 899,
+    "custo": 610,
+    "demanda": 140
+  },
+  {
+    "id": "P09",
+    "nome": "Suporte Notebook",
+    "preco": 99.9,
+    "custo": 38,
+    "demanda": 620
+  },
+  {
+    "id": "P10",
+    "nome": "Caixa de Som BT",
+    "preco": "249,90",
+    "custo": 132,
+    "demanda": 380
+  },
+  {
+    "id": "P11",
+    "nome": "Película de Vidro",
+    "preco": 24.9,
+    "custo": 4.8,
+    "demanda": 5200
+  },
+  {
+    "id": "P12",
+    "nome": "Power Bank 20000mAh",
+    "preco": 179.9,
+    "custo": 205,
+    "demanda": 260
+  },
+  {
+    "id": "P13",
+    "nome": "Ring Light",
+    "preco": 139,
+    "custo": 71,
+    "demanda": 340
+  },
+  {
+    "id": "P14",
+    "nome": "Microfone Lapela",
+    "preco": 84.9,
+    "custo": 37,
+    "demanda": 780
+  },
+  {
+    "id": "P15",
+    "nome": "Smartwatch Básico",
+    "preco": 319,
+    "custo": null,
+    "demanda": 290
+  },
+  {
+    "id": "P16",
+    "nome": "Carregador 30W",
+    "preco": 79.9,
+    "custo": 42,
+    "demanda": 1500
+  },
+  {
+    "id": "P17",
+    "nome": "Mousepad Gamer XL",
+    "preco": 59.9,
+    "custo": 21,
+    "demanda": 830
+  },
+  {
+    "id": "P18",
+    "nome": "Adaptador HDMI 4K",
+    "preco": 69.9,
+    "custo": 27,
+    "demanda": 960
+  },
+  {
+    "id": "P19",
+    "nome": "Cartão SD 256GB",
+    "preco": 119.9,
+    "custo": 74,
+    "demanda": 1100
+  },
+  {
+    "id": "P20",
+    "nome": "Estabilizador Celular",
+    "preco": 289,
+    "custo": 176,
+    "demanda": 210
+  }
+]
