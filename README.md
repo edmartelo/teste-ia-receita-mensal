@@ -94,15 +94,30 @@ do projeto. Ele apontou 13 achados; tratei-os assim:
   de dizer especificamente "sem custo cadastrado", já que agora a exclusão
   pode vir de qualquer um dos três campos.
 
-**Documentados, não corrigidos** (fora do escopo dos 40 minutos — não
-ocorrem com o `data.json` atual, só com variações hipotéticas de export):
-`parseNumber` assume formatação BR mesmo em strings decimais simples (ex.:
-`"89.9"` seria mal interpretado); `data.json` não é validado como array antes
-do `map`; margem consolidada cai para "0,0%" (e não para negativo) no caso
-extremo de receita total ficar ≤ 0; `parseFloat` aceita lixo à direita da
-string; cor de lucro/prejuízo duplicada em 3 componentes em vez de uma fonte
-única; `ProfitChart` recalcula o top 10 sem `useMemo`; campo `totalProdutos`
-calculado e nunca consumido.
+**Também corrigidos** (inicialmente deixados só documentados, depois
+endereçados):
+- `parseNumber` só tratava o ponto como separador de milhar — uma string
+  decimal simples como `"89.9"` virava `899`. Agora só remove pontos quando
+  a mesma string tem vírgula (padrão BR real, ex. `"1.299,90"`); sem vírgula,
+  o ponto já é o separador decimal.
+- Junto disso, `parseNumber` passou a validar a string inteira com regex em
+  vez de aceitar o prefixo que `parseFloat` reconhece — um valor como
+  `"12,90un"` agora vira dado inválido (`null`) em vez de silenciosamente
+  virar `12.9`.
+- `computeCatalog` valida que `data.json` é um array de objetos antes do
+  `map` (ignora entradas nulas/inválidas) em vez de derrubar o app inteiro
+  se o export do ERP vier em outro formato.
+- Margem consolidada agora fica indefinida (`—`) em vez de "0,0%" quando a
+  receita total dos produtos completos é ≤ 0 — um card de margem em verde
+  mostrando 0% mascararia um prejuízo real nesse cenário extremo.
+- Cor de lucro/prejuízo centralizada em `src/utils/tone.js` — tabela, cards
+  e gráfico leem da mesma fonte (`TONE`/`tonePorSinal`) em vez de repetir
+  classes Tailwind e hex soltos que podiam desalinhar entre si.
+- `ProfitChart` agora memoiza o cálculo do top 10 com `useMemo`, no mesmo
+  padrão já usado pela tabela.
+- Campo `totalProdutos` removido do resumo por não ter nenhum consumidor.
+
+Com isso, todos os 13 achados do `code-review` foram corrigidos.
 
 ## Ajustes de ordenação
 

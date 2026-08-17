@@ -1,12 +1,17 @@
-// Preços do ERP às vezes chegam como número (129.9) e às vezes como string
-// no formato brasileiro ("1.299,90"). Normaliza os dois para número.
+// Preços do ERP às vezes chegam como número (129.9) e às vezes como string —
+// no formato brasileiro ("1.299,90", ponto de milhar + vírgula decimal) ou
+// já em decimal simples ("89.9"). Só trata o ponto como milhar quando há
+// vírgula decimal na mesma string; sem vírgula, o ponto já é o separador
+// decimal. Valida a string inteira (não só o prefixo que parseFloat aceita)
+// para não engolir lixo à direita como "12,90un".
 export function parseNumber(value) {
   if (value === null || value === undefined) return null
   if (typeof value === 'number') return Number.isFinite(value) ? value : null
   if (typeof value === 'string') {
-    const normalizado = value.trim().replace(/\./g, '').replace(',', '.')
-    const parsed = parseFloat(normalizado)
-    return Number.isNaN(parsed) ? null : parsed
+    const texto = value.trim()
+    const normalizado = texto.includes(',') ? texto.replace(/\./g, '').replace(',', '.') : texto
+    if (!/^-?\d+(\.\d+)?$/.test(normalizado)) return null
+    return parseFloat(normalizado)
   }
   return null
 }
@@ -51,15 +56,22 @@ export function computeProduct(raw) {
 }
 
 export function computeCatalog(rawList) {
-  const produtos = rawList.map(computeProduct)
+  // data.json é um export de ERP externo — valida o formato mínimo (array
+  // de objetos) antes de processar, em vez de deixar o .map quebrar a tela
+  // inteira em branco se vier um formato inesperado (ex.: objeto envelope
+  // {produtos: [...]} ou uma entrada nula no meio da lista).
+  const brutos = Array.isArray(rawList) ? rawList.filter((r) => r && typeof r === 'object') : []
+  const produtos = brutos.map(computeProduct)
   const completos = produtos.filter((p) => p.completo)
 
   const receitaTotal = completos.reduce((sum, p) => sum + p.receita, 0)
   const lucroTotal = completos.reduce((sum, p) => sum + p.lucro, 0)
   // Ponderada por receita (lucroTotal / receitaTotal), não média simples das
   // margens individuais — assim produtos com mais peso no faturamento pesam
-  // mais no resultado consolidado.
-  const margemConsolidada = receitaTotal > 0 ? (lucroTotal / receitaTotal) * 100 : 0
+  // mais no resultado consolidado. Sem receita (nenhum produto completo, ou
+  // todos com preço 0), a margem consolidada não tem denominador — fica
+  // indefinida (null) em vez de mascarar prejuízo como "0,0%".
+  const margemConsolidada = receitaTotal > 0 ? (lucroTotal / receitaTotal) * 100 : null
 
   return {
     produtos,
@@ -67,7 +79,6 @@ export function computeCatalog(rawList) {
       receitaTotal,
       lucroTotal,
       margemConsolidada,
-      totalProdutos: produtos.length,
       produtosIncompletos: produtos.length - completos.length,
     },
   }

@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import {
   Bar,
   BarChart,
@@ -9,6 +10,7 @@ import {
   YAxis,
 } from 'recharts'
 import { formatBRL } from '../utils/catalog.js'
+import { TONE, tonePorSinal } from '../utils/tone.js'
 
 function ChartTooltip({ active, payload }) {
   if (!active || !payload?.length) return null
@@ -22,10 +24,14 @@ function ChartTooltip({ active, payload }) {
 }
 
 export default function ProfitChart({ produtos }) {
-  const top10 = produtos
-    .filter((p) => p.completo)
-    .sort((a, b) => b.lucro - a.lucro) // maior lucro no topo do gráfico horizontal
-    .slice(0, 10)
+  const top10 = useMemo(
+    () =>
+      produtos
+        .filter((p) => p.completo)
+        .sort((a, b) => b.lucro - a.lucro) // maior lucro no topo do gráfico horizontal
+        .slice(0, 10),
+    [produtos]
+  )
 
   return (
     <div className="rounded-xl border border-zinc-800 bg-panel/80 p-5">
@@ -52,7 +58,7 @@ export default function ProfitChart({ produtos }) {
             <Tooltip content={<ChartTooltip />} cursor={{ fill: 'rgba(57,255,136,0.06)' }} />
             <Bar dataKey="lucro" radius={[0, 4, 4, 0]} maxBarSize={18}>
               {top10.map((p) => (
-                <Cell key={p.id} fill={p.lucro >= 0 ? '#39ff88' : '#ff3d81'} />
+                <Cell key={p.id} fill={TONE[tonePorSinal(p.lucro)].hex} />
               ))}
             </Bar>
           </BarChart>

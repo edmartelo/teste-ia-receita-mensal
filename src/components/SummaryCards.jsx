@@ -1,13 +1,8 @@
 import { formatBRL, formatPercent } from '../utils/catalog.js'
-
-const TONE_CLASSES = {
-  cyan: { border: 'border-neon-cyan/30 shadow-glow-cyan', text: 'text-neon-cyan' },
-  green: { border: 'border-neon-green/30 shadow-glow-green', text: 'text-neon-green' },
-  pink: { border: 'border-neon-pink/30 shadow-glow-pink', text: 'text-neon-pink' },
-}
+import { TONE, tonePorSinal } from '../utils/tone.js'
 
 function Card({ label, value, tone, hint }) {
-  const { border, text } = TONE_CLASSES[tone]
+  const { border, text } = TONE[tone]
 
   return (
     <div className={`rounded-xl border bg-panel/80 p-5 shadow-lg ${border}`}>
@@ -19,8 +14,8 @@ function Card({ label, value, tone, hint }) {
 }
 
 export default function SummaryCards({ resumo }) {
-  const lucroTone = resumo.lucroTotal >= 0 ? 'green' : 'pink'
-  const margemTone = resumo.margemConsolidada >= 0 ? 'green' : 'pink'
+  const lucroTone = tonePorSinal(resumo.lucroTotal)
+  const margemTone = resumo.margemConsolidada === null ? 'cyan' : tonePorSinal(resumo.margemConsolidada)
 
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">

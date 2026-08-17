@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { formatBRL, formatPercent } from '../utils/catalog.js'
+import { TONE, tonePorSinal } from '../utils/tone.js'
 
 export default function CatalogTable({ produtos }) {
   const [busca, setBusca] = useState('')
@@ -67,20 +68,13 @@ export default function CatalogTable({ produtos }) {
           <tbody>
             {filtrados.map((p) => {
               const semCusto = !p.completo
-              const prejuizo = p.completo && p.lucro < 0
-              const valorClasse = semCusto
-                ? 'text-zinc-500'
-                : prejuizo
-                ? 'text-neon-pink'
-                : 'text-neon-green'
+              const valorClasse = semCusto ? TONE.neutral.text : TONE[tonePorSinal(p.lucro)].text
               // Margem tem cor própria: indefinida (÷0, ex. brinde a R$ 0) não
               // é a mesma coisa que prejuízo, então não herda a cor do lucro.
               const margemClasse =
                 semCusto || p.margem === null
-                  ? 'text-zinc-500'
-                  : p.margem < 0
-                  ? 'text-neon-pink'
-                  : 'text-neon-green'
+                  ? TONE.neutral.text
+                  : TONE[tonePorSinal(p.margem)].text
 
               return (
                 <tr key={p.id} className="border-b border-zinc-800/60 last:border-0">
