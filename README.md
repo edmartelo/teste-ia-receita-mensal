@@ -1,3 +1,140 @@
+# Catalog Margin Dashboard
+
+Dashboard for visibility into the margin health of the product portfolio:
+which products generate profit, which operate at a loss, and where the
+result is concentrated.
+
+## Stack
+
+- **React 18 + Vite** — no routing framework or state manager: it's a
+  single screen and state (search/sorting) is local to the components.
+- **Tailwind CSS** instead of MUI — for a single screen with few custom
+  visual components (cards, table, chart), Tailwind avoids the weight of
+  a whole design system and gives direct control over the requested neon
+  palette.
+- **Recharts** for the bar chart — the only charting lib added, sufficient
+  for the use case (one horizontal bar chart).
+
+## Running
+
+```bash
+npm install
+npm run dev
+```
+
+## Calculation and data handling decisions
+
+The data comes from an ERP export (`data.json`) and arrives with real
+inconsistencies — part of the exercise was deciding how to handle them:
+
+- **Price as a BR-formatted string** (`"1.299,90"`): some products carry
+  the price as a string in Brazilian format instead of a number.
+  Normalized via `parseNumber` (strips the `.` thousands separator, swaps
+  the `,` decimal separator for `.`).
+- **Missing cost (`null`)**: two products (Hub USB-C, Smartwatch Básico)
+  have no registered cost. Without cost there's no reliable way to
+  calculate profit or margin — rather than assuming zero cost (which
+  would artificially inflate profit), these products are **excluded from
+  the consolidated totals** (revenue, profit and margin in the summary
+  card) and flagged in the table with an "incomplete data" badge. Their
+  gross revenue could be calculated in isolation, but including it in
+  only the numerator or only the denominator of the consolidated figure
+  would distort the margin — so they're left out of both.
+- **Zero price (giveaway item)**: "Brinde Adesivos" has a price of R$ 0
+  and a cost of R$ 2.50. The percentage margin is undefined (division by
+  zero) and shows as "—" in the table, but **profit is still calculated
+  normally** (0 − cost × demand = loss), because that information is the
+  whole point of the dashboard: showing where the catalog is losing
+  money.
+- **Product margin**: `(price − cost) / price × 100` — the unit profit's
+  share of the sale price, as requested (not of the cost).
+- **Consolidated catalog margin**: `total profit / total revenue`, not the
+  simple average of individual margins. This automatically weights by
+  each product's share of revenue — a high-volume/low-margin product
+  weighs more in the real result than a niche product with a high margin,
+  which is exactly the requested behavior.
+
+## Visual design
+
+Found it more productive to use Tailwind — a full library would add
+unnecessary weight to the project.
+
+Dark theme with a neon palette (green for profit, pink/magenta for loss,
+cyan as a neutral highlight color), used consistently across cards, chart
+and table. Color is never the only signal: negative values also carry a
+"▼" badge and products with incomplete data carry an "incomplete data"
+label, not just a different color.
+
+The palette was validated with the contrast/CVD script from Claude Code's
+data-visualization skill (contrast ≥ 3:1 against the dark background and
+safe separation for color blindness between green/pink/cyan). One noted
+caveat: the neon green and cyan used here are lighter than the standard
+recommended range for categorical dashboard palettes — a conscious
+trade-off to meet the explicit "neon colors" request while keeping the
+contrast and colorblind-distinguishability criteria.
+
+## Agent review (code-review)
+
+After the first working version, I ran Claude Code's `code-review` skill
+(a fork of 10 search agents + adversarial verification) over the project's
+full diff. It flagged 13 findings; here's how they were handled:
+
+**Fixed:**
+- **Undefined margin color** (`CatalogTable.jsx`): the Margin column
+  inherited the loss color (pink) from Profit whenever `p.lucro < 0`, so
+  "Brinde Adesivos" (undefined margin due to R$ 0 price, ÷0) showed up in
+  pink even without an actual negative margin — conflating "undefined"
+  with "loss". Margin now has its own color: gray when undefined/
+  incomplete, pink only when actually negative.
+- **Search broke on missing name**: the name filter called
+  `.toLowerCase()` directly on `p.nome`, without the same null-guard
+  already in place for price/cost/demand. One ERP row without a `nome`
+  would crash the whole dashboard when typing in the search box. Fixed
+  with `String(p.nome ?? '')`.
+- **Negative price/cost/demand weren't treated as invalid data**: a
+  negative cost, for example, pushed margin above 100% and artificially
+  inflated profit. Negative values are now treated as missing, following
+  the same pattern already used for null cost (the product goes to
+  "incomplete data" and drops out of the totals). The summary copy also
+  stopped saying specifically "no registered cost", since the exclusion
+  can now come from any of the three fields.
+
+**Also fixed** (initially left only documented, later addressed):
+- `parseNumber` only handled the dot as a thousands separator — a plain
+  decimal string like `"89.9"` turned into `899`. It now only strips dots
+  when the same string also has a comma (real BR pattern, e.g.
+  `"1.299,90"`); without a comma, the dot is already the decimal
+  separator.
+- Along with that, `parseNumber` now validates the entire string with a
+  regex instead of accepting whatever prefix `parseFloat` recognizes — a
+  value like `"12,90un"` now becomes invalid data (`null`) instead of
+  silently becoming `12.9`.
+- `computeCatalog` validates that `data.json` is an array of objects
+  before `map` (ignoring null/invalid entries) instead of crashing the
+  entire app if the ERP export comes in a different format.
+- The consolidated margin is now undefined (`—`) instead of "0.0%" when
+  total revenue from complete products is ≤ 0 — a margin card showing 0%
+  in green would mask a real loss in that extreme scenario.
+- Profit/loss color centralized in `src/utils/tone.js` — table, cards and
+  chart all read from the same source (`TONE`/`tonePorSinal`) instead of
+  repeating loose Tailwind classes and hex values that could drift out of
+  sync.
+- `ProfitChart` now memoizes the top-10 calculation with `useMemo`, the
+  same pattern already used by the table.
+- The `totalProdutos` field was removed from the summary since it had no
+  consumers.
+
+With that, all 13 findings from `code-review` were addressed.
+
+## Time spent
+
+Exercise deadline: 40 minutes.
+Time spent on test mechanics — **+/- 10 minutes**
+AI execution time: **~8 minutes**
+Actual build time: **~18 minutes**
+
+---
+
 # Painel de Margem do Catálogo
 
 Painel para visibilidade sobre a saúde de margem do portfólio de produtos:
